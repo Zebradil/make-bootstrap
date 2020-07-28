@@ -54,7 +54,7 @@ override ROOT := $(shell git rev-parse --show-toplevel)
 # A generic help message that parses the available targets, and lists each one
 # that has a comment on the same line with a ## prefix.
 help: ## Display this help
-	readonly pad=25
+	readonly pad=$$(printf "%0.1s" "-"{1..25})
 	print_targets() {
 		local -n targets_ref=$$1
 		if (( "$${#targets_ref[@]}" > 0 )); then
@@ -80,9 +80,9 @@ help: ## Display this help
 					local target="$${line%%:*}"
 					local comment="$${line##*## }"
 					if [ "$${targets[$${target}]+x}" ]; then
-						targets["$${target}"]+=$$(printf "\n    \033[0;32m%-$${pad}s\033[0m %s\n" "" "$${comment}")
+						targets["$${target}"]+=$$(printf "\n    %$${#pad}s  %s\n" "" "$${comment}")
 					else
-						targets["$${target}"]=$$(printf "    \033[0;32m%-$${pad}s\033[0m %s\n" "$${target}" "$${comment}")
+						targets["$${target}"]=$$(printf "    \033[0;32m%s\033[0m %s %s\n" "$${target}" "$${pad:$${#target}}" "$${comment}")
 					fi
 				fi
 			done < "$${mk}"
