@@ -49,44 +49,58 @@ SHELL       := bash
 # file inclusion in both Bash and Make.
 override ROOT := $(shell git rev-parse --show-toplevel)
 
+## Default
+
 # A generic help message that parses the available targets, and lists each one
 # that has a comment on the same line with a ## prefix.
 help: ## Display this help
 	readonly pad=25
+	print_targets() {
+		local -n targets_ref=$$1
+		if (( "$${#targets_ref[@]}" > 0 )); then
+			declare -a keys=()
+			readarray -t keys < <(printf "%s\n" "$${!targets_ref[@]}" | sort -d)
+			for target in "$${keys[@]}"; do
+				printf "%s\n" "$${targets_ref[$$target]}"
+			done
+		fi
+	}
 	targets() {
-		local targets=()
-		local pattern='[^:]+:[^#]*## .*'
-
+		declare -A targets=()
+		local target_pattern='[^:]+::?[^#]*## +.*'
+		local section_pattern='^## .*'
 		for mk in "$$@"; do
 			while read -r line; do
-				if [[ "$${line}" =~ $${pattern} ]]; then
-					targets+=("$${line}")
+				if [[ "$${line}" =~ $${section_pattern} ]]; then
+					print_targets targets
+					targets=()
+					local comment="$${line##*## }"
+					printf "  \033[1m%s\033[0m\n" "$${comment}"
+				elif [[ "$${line}" =~ $${target_pattern} ]]; then
+					local target="$${line%%:*}"
+					local comment="$${line##*## }"
+					if [ "$${targets[$${target}]+x}" ]; then
+						targets["$${target}"]+=$$(printf "\n    \033[0;32m%-$${pad}s\033[0m %s\n" "" "$${comment}")
+					else
+						targets["$${target}"]=$$(printf "    \033[0;32m%-$${pad}s\033[0m %s\n" "$${target}" "$${comment}")
+					fi
 				fi
 			done < "$${mk}"
-		done
-
-		readarray -t targets < <(for t in "$${targets[@]}"; do echo "$$t"; done | sort -d)
-
-		for target in "$${targets[@]}"; do
-			printf "    \033[0;32m%-$${pad}s\033[0m %s\n" "$${target%%:*}" "$${target##*## }"
+			print_targets targets
+			targets=()
 		done
 	}
 
 	echo
-	echo -e "\033[0;33mUsage:\033[0m
-		make [flags...] [target...] [options...]
-
-	\033[0;33mFlags:\033[0m
-		See \033[1;30mmake --help\033[0m
-
-	\033[0;33mTargets:\033[0m"
+	echo -e "\033[0;33mUsage:\033[0m"
+	echo -e "    make [flags...] [target...] [options...]"
+	echo
+	echo -e "\033[0;33mFlags:\033[0m"
+	echo -e "    See \033[1mmake --help\033[0m"
+	echo
+	echo -e "\033[0;33mTargets:\033[0m"
 
 	targets $(MAKEFILE_LIST)
 
 	printf "\n\033[0;33mOptions:\033[0m\n    \033[0;32m%-$${pad}s\033[0m Set mode to 1 for verbose output \033[0;33m[default: 0]\033[0m\n\n" 'VERBOSE=<mode>'
 .PHONY: help
-
-# alternative, simpler help goal (requires comments _before_ the rule):
-## help: display this help
-# help: Makefile
-# 	@sed -n 's/^##//p' $<
