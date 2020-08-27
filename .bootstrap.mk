@@ -1,6 +1,6 @@
 # Export all Make variables by default to sub-make as well as Shell calls.
 #
-# Note that you can still explicitely mark a variable with `unexport` and it is
+# Note that you can still explicitly mark a variable with `unexport` and it is
 # not going to be exported by Make, regardless of this setting.
 #
 # https://www.gnu.org/software/make/manual/html_node/Variables_002fRecursion.html
