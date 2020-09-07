@@ -47,7 +47,12 @@ SHELL       := bash
 
 # Determine the root directory of our codebase and export it, this allows easy
 # file inclusion in both Bash and Make.
-override ROOT := $(shell git rev-parse --show-toplevel)
+override ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+GITROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
+ifneq ($(.SHELLSTATUS),0)
+  $(warning "Can't detect git root. GITROOT variable will be empty")
+endif
 
 ## Default
 
