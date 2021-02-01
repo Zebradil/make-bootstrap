@@ -61,8 +61,15 @@ endif
 #   1. Variable name(s) to test.
 #   2. (optional) Error message to print.
 # Credits: https://stackoverflow.com/a/10858332/2227895
-check_defined = $(strip $(foreach 1,$1, $(call __check_defined,$1,$(strip $(value 2)))))
-__check_defined = $(if $(value $1),, $(error Undefined $1$(if $2, ($2))))
+# Workaround for --warn-undefined-variables
+1=
+2=
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $2, ($2))))
 
 ## Default
 
