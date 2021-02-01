@@ -54,6 +54,16 @@ ifneq ($(.SHELLSTATUS),0)
   $(warning "Can't detect git root. GITROOT variable will be empty")
 endif
 
+# Check that given variables are set and all have non-empty values,
+# die with an error otherwise.
+#
+# Params:
+#   1. Variable name(s) to test.
+#   2. (optional) Error message to print.
+# Credits: https://stackoverflow.com/a/10858332/2227895
+check_defined = $(strip $(foreach 1,$1, $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = $(if $(value $1),, $(error Undefined $1$(if $2, ($2))))
+
 ## Default
 
 # A generic help message that parses the available targets, and lists each one

@@ -10,3 +10,6 @@ hello: ## with multiline help message
 .PHONY: hello
 
 another:: ## This should go first
+
+test-defined:: ## Test check_defined function
+	@:$(call check_defined, FOO BAR, FOO and BAR must be set)
